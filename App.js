@@ -1,5 +1,4 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
 
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer} from 'react-navigation';
@@ -7,10 +6,10 @@ import { createAppContainer} from 'react-navigation';
 import Start from './components/Start';
 import Chat from './components/Chat';
 
+//navigation on app. start.js has name and background pick then navigates to Chat.js
   const navigator = createStackNavigator({
     Start: {screen: Start},
     Chat: {screen: Chat}
-
   })
 
 const navigatorContainer = createAppContainer(navigator);

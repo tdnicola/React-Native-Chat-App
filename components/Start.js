@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 //import relevant components from react native
 import { StyleSheet, Text, View, TextInput, Button, ImageBackground, TouchableOpacity, } from 'react-native';
 
-// create Screen1 (Start) class
+// Starting Screen
 export default class Start extends Component {
     constructor(props) {
         super(props);
@@ -19,7 +19,7 @@ export default class Start extends Component {
                     <View style={styles.triContainer}>
                         <View style={styles.containerTriFlex}>
                             <TextInput
-                                style={styles.yourName}
+                                style={styles.yourNameInput}
                                 onChangeText={(name) => this.setState({name})}
                                 value={this.state.name}
                                 placeholder='Your name'
@@ -27,7 +27,7 @@ export default class Start extends Component {
                         </View>
                             <Text>Pick your background!</Text>
                             <View style={styles.colorButtonContainer}>
-                                <TouchableOpacity style={[styles.colorButton, styles.brown]} onPress={() => this.setState({color: '\'#99847B\''})}></TouchableOpacity>
+                                <TouchableOpacity style={[styles.colorButton, styles.brown]} onPress={() => this.setState({color: '#99847B'})}></TouchableOpacity>
                                 <TouchableOpacity style={[styles.colorButton, styles.red]} onPress={() => this.setState({color: '#CB8C9D'})}></TouchableOpacity>
                                 <TouchableOpacity style={[styles.colorButton, styles.blue]} onPress={() => this.setState({color: '#B8CECD'})}></TouchableOpacity>
                                 <TouchableOpacity style={[styles.colorButton, styles.yellow]} onPress={() => this.setState({color: '#DAE362'})}></TouchableOpacity>
@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         marginBottom: 100,
     },
-
     backgroundImage: {
         width: '100%', 
         height: '100%', 
@@ -60,7 +59,7 @@ const styles = StyleSheet.create({
         alignItems: 'center', 
         flex: 1
     },
-    yourName: {
+    yourNameInput: {
         fontSize: 16,
         fontWeight: '300',
         color: '#757083',
