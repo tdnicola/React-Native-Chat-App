@@ -6,8 +6,7 @@ import { StyleSheet, Text, View, TextInput, Button, ImageBackground, TouchableOp
 export default class Start extends Component {
     constructor(props) {
         super(props);
-        this.state = { name: '' },
-        this.state = { color: ''}
+        this.state = { name: '' }
     }
 
     render(){
