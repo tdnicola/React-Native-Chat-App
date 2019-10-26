@@ -2,6 +2,7 @@ import React from 'react';
 
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer} from 'react-navigation';
+import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import Start from './components/Start';
 import Chat from './components/Chat';
