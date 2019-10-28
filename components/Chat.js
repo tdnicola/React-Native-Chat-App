@@ -9,6 +9,14 @@ import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 
 export default class Chat extends Component {
+    //pulling in information from Start.js name/color
+     static navigationOptions = ({ navigation }) => {
+        return {
+            name: navigation.state.params.name,
+            color: navigation.state.params.color,
+        };
+    };
+
     constructor(props) {
         super(props);
     }
@@ -51,24 +59,20 @@ export default class Chat extends Component {
                         backgroundColor: '#000'
                     }
                 }}
+                textStyle={{
+                    style: {
+                        color: 'black',
+                    }
+                }}
             />
         )
     }
-
 
     onSend(messages = []) {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
         }))
     }
-
-    //pulling in information from Start.js name/color
-    static navigationOptions = ({ navigation }) => {
-        return {
-            name: navigation.state.params.name,
-            color: navigation.state.params.color,
-        };
-    };
 
     render(){
         return (
