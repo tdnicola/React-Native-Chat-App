@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 //import relevant components from react native
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, FlatList } from 'react-native';
 
 import { GiftedChat, Bubble } from 'react-native-gifted-chat';
 import { Platform } from '@unimodules/core';
@@ -16,7 +16,6 @@ export default class Chat extends Component {
      static navigationOptions = ({ navigation }) => {
         return {
             name: navigation.state.params.name,
-            color: navigation.state.params.color,
         };
     };
 
@@ -48,13 +47,17 @@ export default class Chat extends Component {
         querySnapshot.forEach((doc) => {
           var data = doc.data();
           messages.push({
-            message: data.message,
+            _id: data._id,
+            text: data.text,
+            image: data.image,
+            location: data.location,
+            user: this.state.user,
+            // messages: data.message,
           });
         });
-    
         this.setState({
           messages,
-        })
+        });
       }
 
     //adding messages to the database and setting the state of user id
@@ -68,9 +71,9 @@ export default class Chat extends Component {
               uid: user.uid,
               loggedInText: 'Hello there',
             });
-            // currently not needed,  selecting messages based off of the user id.
-            // this.referenceChatUser = firebase.firestore().collection('messages').where('uid', '==', this.state.uid);
-            // this.unsubscribeMessageUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
+            this.referenceChatUser = firebase.firestore().collection('messages');
+
+            this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
       
           });
     }
@@ -78,33 +81,28 @@ export default class Chat extends Component {
 //unmounting
     componentWillUnmount(){
         this.unsubscribe();
-        // this.unsubscribeMessageUser();
+        this.unsubscribeChatUser();
       }
-      
-// changing the color of the text bubble
-    renderBubble(props) {
-        return (
-            <Bubble 
-                {...props}
-                wrapperStyle={{
-                    right: {
-                        backgroundColor: '#000'
-                    }
-                }}
-                textStyle={{
-                    style: {
-                        color: 'black',
-                    }
-                }}
-            />
-        )
-    }
 
+
+//Adding messages to the database getting undefined on the messages, currently looped around in onSend
+    addMessage() {
+        // console.log('HELLO')
+          this.referenceChatMessages.add({
+              //undefined messages?
+            messages,
+            uid: this.state.uid,
+        });
+      }
+
+    
+//clicking that send button to send that message. addes to state and to database.
     onSend(messages = []) {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
         }))
-
+        
+        // this.addMessage();
 // sending messages to firebase database
         this.referenceChatMessages.add({
             messages,
@@ -120,13 +118,15 @@ export default class Chat extends Component {
             >
                 <Text> Hello {this.props.navigation.state.params.name}</Text>
                 <GiftedChat
-                    renderBubble={this.renderBubble.bind(this)}
                     messages={this.state.messages}
                     onSend={messages => this.onSend(messages)}
-                    user={{
-                        _id: 1,
-                    }}
+                    user={this.state.uid}
                 />
+                {/* <FlatList
+                    data={this.state.messages}
+                    renderItem={({item}) => 
+                    <Text> {item}</Text>}
+                /> */}
                 {/* Keyboard spacer for android only. */}
                 {Platform.OS === 'android' ? <KeyboardSpacer /> : null}
             </View>
