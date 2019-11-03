@@ -51,7 +51,7 @@ export default class Chat extends Component {
             text: data.text,
             image: data.image,
             location: data.location,
-            user: this.state.user,
+            user: this.state.uid,
             // messages: data.message,
           });
         });
@@ -85,13 +85,16 @@ export default class Chat extends Component {
       }
 
 
-//Adding messages to the database getting undefined on the messages, currently looped around in onSend
+//Adding messages to the database 
     addMessage() {
+    const message = this.state.messages[0];
+
         // console.log('HELLO')
           this.referenceChatMessages.add({
-              //undefined messages?
-            messages,
-            uid: this.state.uid,
+            _id: message._id,
+            text: message.text,
+            createdAt: message.createdAt,
+            user: message.user
         });
       }
 
@@ -100,14 +103,9 @@ export default class Chat extends Component {
     onSend(messages = []) {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
-        }))
-        
-        // this.addMessage();
-// sending messages to firebase database
-        this.referenceChatMessages.add({
-            messages,
-            uid: this.state.uid,
-        })
+        }),
+            () => this.addMessage()
+        )
     }
 
     render(){
