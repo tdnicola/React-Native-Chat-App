@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 //import relevant components from react native
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage, NetInfo } from 'react-native';
 
 import { GiftedChat, Bubble } from 'react-native-gifted-chat';
 import { Platform } from '@unimodules/core';
@@ -60,36 +60,56 @@ export default class Chat extends Component {
         });
       }
 
+//retreiving messages from asyncStorage
+      async getMessages() {
+        let messages = '';
+        try {
+            messages = await AsyncStorage.getItem('messages') || [];
+            this.setState({
+                messages: JSON.parse(messages)
+            });
+        } catch (err) {
+            console.log(err.message);
+        }
+      }
+
     //adding messages to the database and setting the state of user id
     componentDidMount() {
-        this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                firebase.auth().signInAnonymously();
-            }
-            //update user state with currently active user data
-            this.setState({
-              uid: user.uid,
-              loggedInText: 'Hello there',
-            });
-            this.referenceChatUser = firebase.firestore().collection('messages');
+        this.getMessages();
 
-            this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
-      
-          });
+        NetInfo.isConnected.fetch().then(isConnected => {
+            if(isConnected) {
+                this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                    if (!user) {
+                        firebase.auth().signInAnonymously();
+                    }
+                    //update user state with currently active user data
+                    this.setState({
+                      uid: user.uid,
+                      loggedInText: 'Hello there',
+                    });
+                    this.referenceChatUser = firebase.firestore().collection('messages');
+        
+                    this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
+              
+                  });
+            } else {
+                this.getMessages();
+            }
+        })
+ 
     }
 
 //unmounting
-    componentWillUnmount(){
-        this.unsubscribe();
-        this.unsubscribeChatUser();
-      }
+    // componentWillUnmount(){
+    //     // this.unsubscribe();
+    //     this.unsubscribeChatUser();
+    //   }
 
 
-//Adding messages to the database 
+//Adding messages to the firebase database 
     addMessage() {
     const message = this.state.messages[0];
-
-        // console.log('HELLO')
           this.referenceChatMessages.add({
             _id: message._id,
             text: message.text,
@@ -98,14 +118,32 @@ export default class Chat extends Component {
         });
       }
 
-    
+//setting messages in the async storage
+    async saveMessage() {
+        try {
+            await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+        } catch (err) {
+            console.log(err.message);
+        }
+
+    }
+
+//Deleting stored messages 
+    async deleteMessages() {
+        try {
+            await AsyncStorage.removeItem('messages');
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
 //clicking that send button to send that message. addes to state and to database.
     onSend(messages = []) {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
-        }),
-            () => this.addMessage()
-        )
+        }), () => {
+            this.saveMessage()
+        })
     }
 
     render(){
@@ -118,13 +156,9 @@ export default class Chat extends Component {
                 <GiftedChat
                     messages={this.state.messages}
                     onSend={messages => this.onSend(messages)}
+                    // key={this.createdAt}
                     user={this.state.uid}
                 />
-                {/* <FlatList
-                    data={this.state.messages}
-                    renderItem={({item}) => 
-                    <Text> {item}</Text>}
-                /> */}
                 {/* Keyboard spacer for android only. */}
                 {Platform.OS === 'android' ? <KeyboardSpacer /> : null}
             </View>
@@ -133,9 +167,13 @@ export default class Chat extends Component {
 }
 
 const styles = StyleSheet.create({
-    backgroundStateColor: {
-       flex: 1,
-       //Erroring about navigation
-    //    backgroundColor: this.props.navigation.state.params.color,
-    }
+    // backgroundStateColor: {
+    //    flex: 1,
+    //    //Erroring about navigation
+    // //    backgroundColor: this.props.navigation.state.params.color,
+    // },
+    // messages: {
+    //     margin: '5px',
+    // }
+
 })
