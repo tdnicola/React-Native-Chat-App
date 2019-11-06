@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 //import relevant components from react native
 import { StyleSheet, Text, View, AsyncStorage, NetInfo } from 'react-native';
 
-import { GiftedChat, Bubble } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
 import { Platform } from '@unimodules/core';
 //only for android chat 
 import KeyboardSpacer from 'react-native-keyboard-spacer';
@@ -37,7 +37,8 @@ export default class Chat extends Component {
         this.state = {
             messages: [],
             uid: 0,
-            loggedIntext: 'Please wait.. Logging in..'
+            loggedIntext: 'Please wait.. Logging in..',
+            isConnected: ''
         }
     }
 
@@ -87,6 +88,7 @@ export default class Chat extends Component {
                     this.setState({
                       uid: user.uid,
                       loggedInText: 'Hello there',
+                      isConnected: true
                     });
                     this.referenceChatUser = firebase.firestore().collection('messages');
         
@@ -95,9 +97,11 @@ export default class Chat extends Component {
                   });
             } else {
                 this.getMessages();
+                this.setState({
+                    isConnected: false
+                })
             }
         })
- 
     }
 
 //unmounting
@@ -106,6 +110,17 @@ export default class Chat extends Component {
     //     this.unsubscribeChatUser();
     //   }
 
+
+    renderInputToolbar(props) {
+        if (this.state.isConnected == false) {
+        }  else {
+            return (
+                <InputToolbar
+                    {...props}
+                />
+            );
+        }
+    }
 
 //Adding messages to the firebase database 
     addMessage() {
@@ -154,6 +169,7 @@ export default class Chat extends Component {
             >
                 <Text> Hello {this.props.navigation.state.params.name}</Text>
                 <GiftedChat
+                    renderInputToolbar={this.renderInputToolbar.bind(this)}
                     messages={this.state.messages}
                     onSend={messages => this.onSend(messages)}
                     // key={this.createdAt}
