@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 //import relevant components from react native
-import { StyleSheet, Text, View, AsyncStorage, NetInfo } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage, NetInfo, Button, Image } from 'react-native';
 
 import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
 import { Platform } from '@unimodules/core';
+import CustomActions from './CustomActions.js'
 //only for android chat 
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import * as Permissions from 'expo-permissions';
+import * as ImagePicker from 'expo-image-picker';
 
 const firebase = require('firebase');
 require('firebase/firestore');
@@ -38,7 +41,8 @@ export default class Chat extends Component {
             messages: [],
             uid: 0,
             loggedIntext: 'Please wait.. Logging in..',
-            isConnected: ''
+            isConnected: '',
+            image: null,
         }
     }
 
@@ -161,6 +165,10 @@ export default class Chat extends Component {
         })
     }
 
+    renderCustomActions = (props) => {
+        return <CustomActions {...props} />;
+    };
+
     render(){
         return (
             <View style={{flex: 1, 
@@ -168,8 +176,21 @@ export default class Chat extends Component {
                 backgroundColor: this.props.navigation.state.params.color}}
             >
                 <Text> Hello {this.props.navigation.state.params.name}</Text>
+                <View style={{flex: 1, justifyContent: 'center' }}>
+                    <Button 
+                        title='Pick an image from library'
+                        onPress={this.pickImage}
+                    />
+                    <Button 
+                        title='Take Photo'
+                        onPress={this.takePhoto}
+                    />
+                </View>
+                {this.state.image && 
+                    <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />}
                 <GiftedChat
                     renderInputToolbar={this.renderInputToolbar.bind(this)}
+                    renderActions={this.renderCustomActions}
                     messages={this.state.messages}
                     onSend={messages => this.onSend(messages)}
                     // key={this.createdAt}
