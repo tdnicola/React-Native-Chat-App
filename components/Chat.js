@@ -165,9 +165,32 @@ export default class Chat extends Component {
         })
     }
 
+//custom small + to take picture/upload picture/locaiton
     renderCustomActions = (props) => {
         return <CustomActions {...props} />;
     };
+
+//show map location
+    renderCustomView(props) {
+        const { currentMessage } = props;
+
+        if (currentMessage.location) {
+            return (
+                <MapView
+                    style={{width: 150,
+                        height: 100,
+                        borderRadius: 13,
+                        margin: 3}}
+                    render={{
+                        latitude: currentMessage.location.latitude,
+                        longitude: currentMessage.location.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                    }}
+                />
+            )
+        }
+    }
 
     render(){
         return (
@@ -176,19 +199,10 @@ export default class Chat extends Component {
                 backgroundColor: this.props.navigation.state.params.color}}
             >
                 <Text> Hello {this.props.navigation.state.params.name}</Text>
-                <View style={{flex: 1, justifyContent: 'center' }}>
-                    <Button 
-                        title='Pick an image from library'
-                        onPress={this.pickImage}
-                    />
-                    <Button 
-                        title='Take Photo'
-                        onPress={this.takePhoto}
-                    />
-                </View>
                 {this.state.image && 
                     <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />}
                 <GiftedChat
+                    renderCustomView={this.renderCustomView}
                     renderInputToolbar={this.renderInputToolbar.bind(this)}
                     renderActions={this.renderCustomActions}
                     messages={this.state.messages}
