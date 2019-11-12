@@ -24,17 +24,19 @@ export default class Chat extends Component {
 
     constructor(props) {
         super(props);
+        if (!firebase.apps.length) {
 
-        firebase.initializeApp({
-            apiKey: "AIzaSyDzslq3cM6HAkpNOaPwHJqfHSRon1nShJE",
-            authDomain: "chatapp-38cba.firebaseapp.com",
-            databaseURL: "https://chatapp-38cba.firebaseio.com",
-            projectId: "chatapp-38cba",
-            storageBucket: "chatapp-38cba.appspot.com",
-            messagingSenderId: "851566681900",
-            appId: "1:851566681900:web:c46c1951ed73232c6f1689",
-            measurementId: "G-NCRH2G1HTD"
-        })
+            firebase.initializeApp({
+                apiKey: "AIzaSyDzslq3cM6HAkpNOaPwHJqfHSRon1nShJE",
+                authDomain: "chatapp-38cba.firebaseapp.com",
+                databaseURL: "https://chatapp-38cba.firebaseio.com",
+                projectId: "chatapp-38cba",
+                storageBucket: "chatapp-38cba.appspot.com",
+                messagingSenderId: "851566681900",
+                appId: "1:851566681900:web:c46c1951ed73232c6f1689",
+                measurementId: "G-NCRH2G1HTD"
+            })
+        }
         this.referenceChatUser = null;
         this.referenceChatMessages = firebase.firestore().collection('messages');
         this.state = {
@@ -78,15 +80,15 @@ export default class Chat extends Component {
         }
       }
 
-    //adding messages to the database and setting the state of user id
+ //checking to see if offline/online
     componentDidMount() {
-        this.getMessages();
 
+ //user is online
         NetInfo.isConnected.fetch().then(isConnected => {
             if(isConnected) {
-                this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                this.authUnsubscribe = firebase.auth().onAuthStateChanged(async user => {
                     if (!user) {
-                        firebase.auth().signInAnonymously();
+                       await firebase.auth().signInAnonymously();
                     }
                     //update user state with currently active user data
                     this.setState({
@@ -97,8 +99,10 @@ export default class Chat extends Component {
                     this.referenceChatUser = firebase.firestore().collection('messages');
         
                     this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
+                    console.log(this.getMessages());
               
                   });
+// user is offline
             } else {
                 this.getMessages();
                 this.setState({
@@ -128,8 +132,8 @@ export default class Chat extends Component {
 
 //Adding messages to the firebase database 
     addMessage() {
-    const message = this.state.messages[0];
-          this.referenceChatMessages.add({
+        const message = this.state.messages[0];
+        this.referenceChatMessages.add({
             _id: message._id,
             text: message.text,
             createdAt: message.createdAt,
@@ -138,7 +142,7 @@ export default class Chat extends Component {
       }
 
 //setting messages in the async storage
-    async saveMessage() {
+    async saveMessagetoStorage() {
         try {
             await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
         } catch (err) {
@@ -161,7 +165,10 @@ export default class Chat extends Component {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
         }), () => {
-            this.saveMessage()
+            //adds to state
+            this.saveMessagetoStorage();
+            // adds to database
+            // this.addMessage();
         })
     }
 
