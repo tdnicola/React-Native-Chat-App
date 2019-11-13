@@ -2,13 +2,11 @@ import React, { Component } from 'react';
 //import relevant components from react native
 import { StyleSheet, Text, View, AsyncStorage, NetInfo, Button, Image } from 'react-native';
 
-import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
+import { GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import { Platform } from '@unimodules/core';
 import CustomActions from './CustomActions.js'
 //only for android chat 
 import KeyboardSpacer from 'react-native-keyboard-spacer';
-import * as Permissions from 'expo-permissions';
-import * as ImagePicker from 'expo-image-picker';
 
 const firebase = require('firebase');
 require('firebase/firestore');
@@ -39,12 +37,18 @@ export default class Chat extends Component {
         }
         this.referenceChatUser = null;
         this.referenceChatMessages = firebase.firestore().collection('messages');
+
         this.state = {
             messages: [],
-            uid: 0,
+            uid: '',
             loggedIntext: 'Please wait.. Logging in..',
             isConnected: '',
             image: null,
+            location: null,
+            user: {
+                _id: '',
+                name: '',
+            }
         }
     }
 
@@ -56,9 +60,10 @@ export default class Chat extends Component {
           messages.push({
             _id: data._id,
             text: data.text,
-            image: data.image,
-            location: data.location,
-            user: this.state.uid,
+            image: data.image || '',
+            location: data.location || '',
+            user: data.user,
+            createdAt: data.createdAt.toDate(),
             // messages: data.message,
           });
         });
@@ -82,7 +87,7 @@ export default class Chat extends Component {
 
  //checking to see if offline/online
     componentDidMount() {
-
+        this.deleteMessages()
  //user is online
         NetInfo.isConnected.fetch().then(isConnected => {
             if(isConnected) {
@@ -94,16 +99,22 @@ export default class Chat extends Component {
                     this.setState({
                       uid: user.uid,
                       loggedInText: 'Hello there',
-                      isConnected: true
+                      isConnected: true,
+                      user: {
+                          _id: user.uid,
+                          name: this.props.navigation.state.params.name,
+                      }
                     });
                     this.referenceChatUser = firebase.firestore().collection('messages');
         
                     this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
-                    console.log(this.getMessages());
+                    // console.log(this.getMessages());
               
                   });
 // user is offline
             } else {
+                console.log(AsyncStorage.getItem('messages'), this.state.messages)
+
                 this.getMessages();
                 this.setState({
                     isConnected: false
@@ -118,18 +129,6 @@ export default class Chat extends Component {
     //     this.unsubscribeChatUser();
     //   }
 
-
-    renderInputToolbar(props) {
-        if (this.state.isConnected == false) {
-        }  else {
-            return (
-                <InputToolbar
-                    {...props}
-                />
-            );
-        }
-    }
-
 //Adding messages to the firebase database 
     addMessage() {
         const message = this.state.messages[0];
@@ -137,7 +136,9 @@ export default class Chat extends Component {
             _id: message._id,
             text: message.text,
             createdAt: message.createdAt,
-            user: message.user
+            user: message.user,
+            image: message.image || '',
+            location: message.location || '',
         });
       }
 
@@ -148,7 +149,7 @@ export default class Chat extends Component {
         } catch (err) {
             console.log(err.message);
         }
-
+        console.log(AsyncStorage.getItem('messages'), this.state.messages)
     }
 
 //Deleting stored messages 
@@ -165,11 +166,23 @@ export default class Chat extends Component {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
         }), () => {
-            //adds to state
+            //adds to asyncstorage
             this.saveMessagetoStorage();
             // adds to database
             // this.addMessage();
         })
+    }
+
+//Removes toolbar if internet is not detected.
+    renderInputToolbar(props) {
+        if (this.state.isConnected == false) {
+        }  else {
+            return (
+                <InputToolbar
+                    {...props}
+                />
+            );
+        }
     }
 
 //custom small + to take picture/upload picture/locaiton
@@ -208,6 +221,10 @@ export default class Chat extends Component {
                 <Text> Hello {this.props.navigation.state.params.name}</Text>
                 {this.state.image && 
                     <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />}
+                    {/* <Button 
+                        title='delete storage'
+                        onPress={this.deleteMessages}
+                    /> */}
                 <GiftedChat
                     renderCustomView={this.renderCustomView}
                     renderInputToolbar={this.renderInputToolbar.bind(this)}
@@ -215,7 +232,7 @@ export default class Chat extends Component {
                     messages={this.state.messages}
                     onSend={messages => this.onSend(messages)}
                     // key={this.createdAt}
-                    user={this.state.uid}
+                    user={this.state.user}
                 />
                 {/* Keyboard spacer for android only. */}
                 {Platform.OS === 'android' ? <KeyboardSpacer /> : null}

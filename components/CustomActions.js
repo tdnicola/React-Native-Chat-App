@@ -44,8 +44,46 @@ export default class CustomActions extends React.Component {
                     image: result
                 });
             }
+            this.props.onSend({image: result})
         }
     }
+
+    //uploading image to the cloud
+    uploadImage = async () => {
+        const blob = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function() {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function(e) {
+                console.log(e);
+                reject(new TypeError('NETWORK REQUEST FAILED'));
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', uri, true);
+            xhr.send(null);
+        });
+
+        //needs new child name each upload
+        const ref = firebase.storage().ref().child('');
+        const snapshot = await ref.put(blob);
+
+        blob.close();
+    }
+
+    getLocationtoSendtoWeirdos = async () => {
+        const { status } = await Permissions.askAsync(Permissions.LOCATION);
+
+        if (status === 'granted') {
+            let result = await Location.getCurrentPositionAsync({});
+
+            if (result) {
+                this.setState({
+                    location: result
+                });
+            }
+        }
+    } 
 
     onActionPress = () => {
         const options = ['Choose From Library', 'Take picture', 'Send your location to a weirdo', 'Cancel']
@@ -65,7 +103,7 @@ export default class CustomActions extends React.Component {
                         this.takePhoto()
                         return;
                     case 2: 
-                        console.log('user wants to share their location');
+                        this.getLocationtoSendtoWeirdos()
                         return;
                 }
             },
