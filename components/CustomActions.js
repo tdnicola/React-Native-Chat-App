@@ -12,11 +12,6 @@ const firebase = require('firebase');
 export default class CustomActions extends React.Component {
     constructor() {
         super()
-
-        this.state = {
-            image: null,
-            location: null
-        }
     }
 
         //picking a photo from the photo library
@@ -29,14 +24,14 @@ export default class CustomActions extends React.Component {
             }).catch(err => console.log(err));
 
             if (!result.cancelled) {
-                this.setState({
-                    image: result
-                });
 
+                // this.setState({
+                //     image: result
+                // });
+                const imageUrlLink = await this.uploadImage(result.uri)
+                console.log(imageUrlLink)
                 //testing naming convention
-                const getImageName = result.uri.split('/')
-                console.log(getImageName)
-                this.props.onSend({image: result.uri})
+                 this.props.onSend({image: imageUrlLink})
             }
         }
     }
@@ -51,11 +46,13 @@ export default class CustomActions extends React.Component {
             }).catch (err => console.log(err));
 
             if (!result.cancelled) {
-                this.setState({
-                    image: result
-                });
-                this.props.onSend({image: result.uri})
-                this.uploadImage(result.uri)
+                // this.setState({
+                //     image: result
+                // });
+                const imageUrlLink = await this.uploadImage(result.uri)
+                console.log(imageUrlLink)
+                //testing naming convention
+                this.props.onSend({image: imageUrlLink})
             }
         }
     }
@@ -77,13 +74,16 @@ export default class CustomActions extends React.Component {
         });
 
         const getImageName = uri.split('/')
-        //needs new child name each upload
-        const ref = firebase.storage().ref().child(uri);
+        const imageArrayLength = getImageName.length - 1
+        
+        const ref = firebase.storage().ref().child(getImageName[imageArrayLength]);
         const snapshot = await ref.put(blob);
 
         blob.close();
 
-        return await snapshot.ref.getDownloadURL()
+      //spitting out image url
+        const imageURL = await snapshot.ref.getDownloadURL()
+        return imageURL
     }
 
     getLocationtoSendtoWeirdos = async () => {
@@ -96,7 +96,6 @@ export default class CustomActions extends React.Component {
                 this.setState({
                     location: result
                 });
-                console.log(result)
                 this.props.onSend({location: {
                     longitude: result.coords.longitude,
                     latitude: result.coords.latitude

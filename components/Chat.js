@@ -170,7 +170,7 @@ export default class Chat extends Component {
             //adds to asyncstorage
             this.saveMessagetoStorage();
             // adds to database
-            // this.addMessage();
+            this.addMessage();
         })
     }
 
