@@ -5,6 +5,9 @@ import { StyleSheet, Text, View, AsyncStorage, NetInfo, Button, Image } from 're
 import { GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import { Platform } from '@unimodules/core';
 import CustomActions from './CustomActions.js'
+
+import MapView from "react-native-maps"
+
 //only for android chat 
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 
@@ -87,7 +90,7 @@ export default class Chat extends Component {
 
  //checking to see if offline/online
     componentDidMount() {
-        this.deleteMessages()
+        // this.deleteMessages()
  //user is online
         NetInfo.isConnected.fetch().then(isConnected => {
             if(isConnected) {
@@ -113,7 +116,6 @@ export default class Chat extends Component {
                   });
 // user is offline
             } else {
-                console.log(AsyncStorage.getItem('messages'), this.state.messages)
 
                 this.getMessages();
                 this.setState({
@@ -149,7 +151,6 @@ export default class Chat extends Component {
         } catch (err) {
             console.log(err.message);
         }
-        console.log(AsyncStorage.getItem('messages'), this.state.messages)
     }
 
 //Deleting stored messages 
@@ -195,6 +196,7 @@ export default class Chat extends Component {
         const { currentMessage } = props;
 
         if (currentMessage.location) {
+            console.log(currentMessage.location.longitude)
             return (
                 <MapView
                     style={{width: 150,
