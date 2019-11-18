@@ -59,10 +59,10 @@ export default class Chat extends Component {
         const messages =[];
         //go through each document
         querySnapshot.forEach((doc) => {
-          var data = doc.data();
+          const data = doc.data();
           messages.push({
             _id: data._id,
-            text: data.text,
+            text: data.text || '',
             image: data.image || '',
             location: data.location || '',
             user: data.user,
@@ -90,7 +90,6 @@ export default class Chat extends Component {
 
  //checking to see if offline/online
     componentDidMount() {
-        // this.deleteMessages()
  //user is online
         NetInfo.isConnected.fetch().then(isConnected => {
             if(isConnected) {
@@ -108,11 +107,9 @@ export default class Chat extends Component {
                           name: this.props.navigation.state.params.name,
                       }
                     });
+
                     this.referenceChatUser = firebase.firestore().collection('messages');
-        
                     this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
-                    // console.log(this.getMessages());
-              
                   });
 // user is offline
             } else {
@@ -126,17 +123,17 @@ export default class Chat extends Component {
     }
 
 //unmounting
-    // componentWillUnmount(){
-    //     // this.unsubscribe();
-    //     this.unsubscribeChatUser();
-    //   }
+    componentWillUnmount(){
+        this.unsubscribe();
+        this.unsubscribeChatUser();
+      }
 
 //Adding messages to the firebase database 
     addMessage() {
         const message = this.state.messages[0];
         this.referenceChatMessages.add({
             _id: message._id,
-            text: message.text,
+            text: message.text || '',
             createdAt: message.createdAt,
             user: message.user,
             image: message.image || '',
@@ -196,14 +193,14 @@ export default class Chat extends Component {
         const { currentMessage } = props;
 
         if (currentMessage.location) {
-            console.log(currentMessage.location.longitude)
+            // console.log(currentMessage, currentMessage[0], currentMessage.location.longitude)
             return (
                 <MapView
                     style={{width: 150,
                         height: 100,
                         borderRadius: 13,
                         margin: 3}}
-                    render={{
+                    region={{
                         latitude: currentMessage.location.latitude,
                         longitude: currentMessage.location.longitude,
                         latitudeDelta: 0.0922,
@@ -222,11 +219,9 @@ export default class Chat extends Component {
             >
                 <Text> Hello {this.props.navigation.state.params.name}</Text>
                 {this.state.image && 
-                    <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />}
-                    {/* <Button 
-                        title='delete storage'
-                        onPress={this.deleteMessages}
-                    /> */}
+                    <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />
+                }
+
                 <GiftedChat
                     renderCustomView={this.renderCustomView}
                     renderInputToolbar={this.renderInputToolbar.bind(this)}

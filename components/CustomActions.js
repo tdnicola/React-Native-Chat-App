@@ -5,7 +5,6 @@ import { StyleSheet, Text, TouchableOpacity, View, Button,  } from 'react-native
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import MapView from "react-native-maps"
 
 const firebase = require('firebase');
 
@@ -24,14 +23,8 @@ export default class CustomActions extends React.Component {
             }).catch(err => console.log(err));
 
             if (!result.cancelled) {
-
-                // this.setState({
-                //     image: result
-                // });
                 const imageUrlLink = await this.uploadImage(result.uri)
-                console.log(imageUrlLink)
-                //testing naming convention
-                 this.props.onSend({image: imageUrlLink})
+                this.props.onSend({image: imageUrlLink})
             }
         }
     }
@@ -46,12 +39,7 @@ export default class CustomActions extends React.Component {
             }).catch (err => console.log(err));
 
             if (!result.cancelled) {
-                // this.setState({
-                //     image: result
-                // });
                 const imageUrlLink = await this.uploadImage(result.uri)
-                console.log(imageUrlLink)
-                //testing naming convention
                 this.props.onSend({image: imageUrlLink})
             }
         }
@@ -77,6 +65,7 @@ export default class CustomActions extends React.Component {
         const imageArrayLength = getImageName.length - 1
         
         const ref = firebase.storage().ref().child(getImageName[imageArrayLength]);
+        console.log(ref, getImageName[imageArrayLength])
         const snapshot = await ref.put(blob);
 
         blob.close();
@@ -86,20 +75,19 @@ export default class CustomActions extends React.Component {
         return imageURL
     }
 
+//perfect naming convention
     getLocationtoSendtoWeirdos = async () => {
         const { status } = await Permissions.askAsync(Permissions.LOCATION);
 
         if (status === 'granted') {
-            let result = await Location.getCurrentPositionAsync({});
-
+            const result = await Location.getCurrentPositionAsync({});
             if (result) {
-                this.setState({
-                    location: result
+                this.props.onSend({
+                    location: {
+                        longitude: result.coords.longitude,
+                        latitude: result.coords.latitude
+                    }
                 });
-                this.props.onSend({location: {
-                    longitude: result.coords.longitude,
-                    latitude: result.coords.latitude
-                }});
             }
         }
     } 
