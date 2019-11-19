@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 //import relevant components from react native
-import { StyleSheet, Text, View, AsyncStorage, NetInfo, Button, Image } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage, NetInfo, Image } from 'react-native';
 
 import { GiftedChat, InputToolbar } from 'react-native-gifted-chat';
-import { Platform } from '@unimodules/core';
 import CustomActions from './CustomActions.js'
 
+//MapView for geo coordinates
 import MapView from "react-native-maps"
 
 //only for android chat 
+import { Platform } from '@unimodules/core';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 const firebase = require('firebase');
@@ -95,7 +96,11 @@ export default class Chat extends Component {
             if(isConnected) {
                 this.authUnsubscribe = firebase.auth().onAuthStateChanged(async user => {
                     if (!user) {
-                       await firebase.auth().signInAnonymously();
+                        try { 
+                            await firebase.auth().signInAnonymously();
+                        } catch (err) {
+                            console.log(err)
+                        }
                     }
                     //update user state with currently active user data
                     this.setState({
@@ -108,12 +113,13 @@ export default class Chat extends Component {
                       }
                     });
 
-                    this.referenceChatUser = firebase.firestore().collection('messages');
+                    this.referenceChatUser = firebase.firestore()
+                        .collection('messages')
+                        .orderBy("createdAt", "desc")
                     this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(this.onCollectionUpdate)
                   });
 // user is offline
             } else {
-
                 this.getMessages();
                 this.setState({
                     isConnected: false
@@ -228,7 +234,6 @@ export default class Chat extends Component {
                     renderActions={this.renderCustomActions}
                     messages={this.state.messages}
                     onSend={messages => this.onSend(messages)}
-                    // key={this.createdAt}
                     user={this.state.user}
                 />
                 {/* Keyboard spacer for android only. */}

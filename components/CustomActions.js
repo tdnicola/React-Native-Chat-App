@@ -18,13 +18,21 @@ export default class CustomActions extends React.Component {
         const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
         if (status === 'granted') {
-            let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: 'Images',
-            }).catch(err => console.log(err));
+            try {
+                let result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: 'Images',
+                })
+            } catch (err) {
+                console.log(err)
+            }
 
             if (!result.cancelled) {
-                const imageUrlLink = await this.uploadImage(result.uri)
-                this.props.onSend({image: imageUrlLink})
+                try {
+                    const imageUrlLink = await this.uploadImage(result.uri)
+                    this.props.onSend({image: imageUrlLink})
+                } catch(err) {
+                    console.log(err)
+                }
             }
         }
     }
@@ -34,13 +42,21 @@ export default class CustomActions extends React.Component {
         const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL)
 
         if (status === 'granted') {
-            let result = await ImagePicker.launchCameraAsync({
-                mediaTypes: 'Images',
-            }).catch (err => console.log(err));
+            try {
+                let result = await ImagePicker.launchCameraAsync({
+                    mediaTypes: 'Images',
+                })
+            } catch(err) {
+                console.log(err)
+            } 
 
             if (!result.cancelled) {
-                const imageUrlLink = await this.uploadImage(result.uri)
-                this.props.onSend({image: imageUrlLink})
+                try {
+                    const imageUrlLink = await this.uploadImage(result.uri)
+                    this.props.onSend({image: imageUrlLink})
+                } catch (err){
+                    console.log(err)
+                }
             }
         }
     }
@@ -80,14 +96,18 @@ export default class CustomActions extends React.Component {
         const { status } = await Permissions.askAsync(Permissions.LOCATION);
 
         if (status === 'granted') {
-            const result = await Location.getCurrentPositionAsync({});
-            if (result) {
-                this.props.onSend({
-                    location: {
-                        longitude: result.coords.longitude,
-                        latitude: result.coords.latitude
-                    }
-                });
+            try {
+                const result = await Location.getCurrentPositionAsync({});
+                if (result) {
+                    this.props.onSend({
+                        location: {
+                            longitude: result.coords.longitude,
+                            latitude: result.coords.latitude
+                        }
+                    });
+                }
+            } catch(err) {
+                console.log(err)
             }
         }
     } 
