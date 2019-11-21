@@ -4,7 +4,7 @@ To install:
 ```npm i```
 
 Currently set up on testing firebase database for learning. 
-No login required, just enter name, click the color of thebackground you would like, and click start chatting.
+No login required, just enter name, click the color of the background you would like, and click start chatting.
 
 ## Main page
 
