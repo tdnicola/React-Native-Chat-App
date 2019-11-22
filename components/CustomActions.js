@@ -14,7 +14,10 @@ export default class CustomActions extends React.Component {
     }
     
     /**
-     * pickImage from photo library
+     * requests permission and allows you to pick image from photo library. sends url to uploadImage and onSend
+     * @async
+     * @function pickImage
+     * 
      */
         // picking a photo from the photo library
     pickImage = async () => {
@@ -40,6 +43,12 @@ export default class CustomActions extends React.Component {
         }
     }
 
+    /**
+     * requests permission to access camera roll and stores the photo as the state and returns uri string. Sends uri string to uploadImage as well as onSend function
+     * @async
+     * @function takePhoto
+     * @returns {Promise<string>} uri - sent to onSend and uploadImage
+     */
     // taking a photo and setting it to the state
     takePhoto = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL)
@@ -64,6 +73,13 @@ export default class CustomActions extends React.Component {
         }
     }
 
+    /**
+     * uploading image as blob to cloud storage
+     * @async
+     * @function uploadImage
+     * @param {string}
+     * @returns {string} url
+     */
     // uploading image to the cloud
     uploadImage = async (uri) => {
         const blob = await new Promise((resolve, reject) => {
@@ -93,6 +109,13 @@ export default class CustomActions extends React.Component {
         return imageURL;
     }
 
+    /**
+     * requests permission for geo coords
+     * @async
+     * @function getLocationtoSendtoWeirdos
+     * @returns {Promise<number>}
+     */
+
 // perfect naming convention
     getLocationtoSendtoWeirdos = async () => {
         const { status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -114,6 +137,11 @@ export default class CustomActions extends React.Component {
         }
     }
 
+    /**
+     * When + is pressed actionSheet is called
+     * @function onActionPress
+     * @returns {actionSheet} - with options to choose from library, take photo, or send location
+     */
     onActionPress = () => {
         const options = ['Choose From Library', 'Take picture', 'Send your location to a weirdo', 'Cancel']
         const cancelButtonIndex = options.length - 1;

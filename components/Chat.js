@@ -1,24 +1,32 @@
 /* eslint-disable indent */
 import React, { Component } from 'react';
-//import relevant components from react native
-import { StyleSheet, Text, View, AsyncStorage, NetInfo, Image } from 'react-native';
+// import relevant components from react native
+import {
+    StyleSheet,
+    Text,
+    View,
+    AsyncStorage,
+    NetInfo,
+    Image,
+} from 'react-native';
 
 import { GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import CustomActions from './CustomActions.js'
 
-//MapView for geo coordinates
+// MapView for geo coordinates
 import MapView from "react-native-maps"
 
-//only for android chat 
+// only for android chat
 import { Platform } from '@unimodules/core';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import { ToolbarAndroid } from 'react-native-gesture-handler';
 
 const firebase = require('firebase');
 require('firebase/firestore');
 
 
 export default class Chat extends Component {
-    //pulling in information from Start.js name/color
+    // pulling in information from Start.js name/color
      static navigationOptions = ({ navigation }) => {
         return {
             name: navigation.state.params.name,
@@ -28,17 +36,16 @@ export default class Chat extends Component {
     constructor(props) {
         super(props);
         if (!firebase.apps.length) {
-
             firebase.initializeApp({
-                apiKey: "AIzaSyDzslq3cM6HAkpNOaPwHJqfHSRon1nShJE",
-                authDomain: "chatapp-38cba.firebaseapp.com",
-                databaseURL: "https://chatapp-38cba.firebaseio.com",
-                projectId: "chatapp-38cba",
-                storageBucket: "chatapp-38cba.appspot.com",
-                messagingSenderId: "851566681900",
-                appId: "1:851566681900:web:c46c1951ed73232c6f1689",
-                measurementId: "G-NCRH2G1HTD"
-            })
+                apiKey: 'AIzaSyDzslq3cM6HAkpNOaPwHJqfHSRon1nShJE',
+                authDomain: 'chatapp-38cba.firebaseapp.com',
+                databaseURL: 'https://chatapp-38cba.firebaseio.com',
+                projectId: 'chatapp-38cba',
+                storageBucket: 'chatapp-38cba.appspot.com',
+                messagingSenderId: '851566681900',
+                appId: '1:851566681900:web:c46c1951ed73232c6f1689',
+                measurementId: 'G-NCRH2G1HTD',
+            });
         }
         this.referenceChatUser = null;
         this.referenceChatMessages = firebase.firestore().collection('messages');
@@ -102,14 +109,14 @@ export default class Chat extends Component {
     }
 
     /**
-     * Updates the state of the message with the input of the text. 
+     * Updates the state of the message with the input of the text.
      * @function onCollectionUpdate
-     * @type {string} _id
-     * @type {string} text
-     * @type {string} image
-     * @type {number} location
-     * @type {string} user
-     * @type {date} createdAt
+     * @param {string} _id
+     * @param {string} text - text message
+     * @param {string} image - uri
+     * @param {number} location - geo coordinates
+     * @param {string} user
+     * @param {date} createdAt - date/time of message creation
      */
 
     onCollectionUpdate = (querySnapshot) => {
@@ -132,19 +139,19 @@ export default class Chat extends Component {
         });
       }
 
-      /**
-       * If user goes offline messages are stored in async storage
-       * @function getMessages
-       * @return messages
-       */
+    /**
+    * If user goes offline messages are stored in async storage
+    * @function getMessages
+    * @return messages
+    */
 
-// retreiving messages from asyncStorage
+    // retreiving messages from asyncStorage
     async getMessages() {
         let messages = '';
         try {
             messages = await AsyncStorage.getItem('messages') || [];
             this.setState({
-                messages: JSON.parse(messages)
+                messages: JSON.parse(messages),
             });
         } catch (err) {
             console.log(err.message);
@@ -154,15 +161,15 @@ export default class Chat extends Component {
     /**
      * Adds the message the firebase database
      * @function addMessage
-     * @type {number} _id
-     * @type {string || null} text
-     * @type {date} createdAt
-     * @type {string} user
-     * @type {image || null} image
-     * @type {number || null} geo coordinates
+     * @param {number} _id
+     * @param {string} text
+     * @param {date} createdAt
+     * @param {string} user
+     * @param {image} image
+     * @param {number} geo - coordinates
      */
-    
-// Adding messages to the firebase database
+
+    // Adding messages to the firebase database
     addMessage() {
         const message = this.state.messages[0];
         this.referenceChatMessages.add({
@@ -175,7 +182,14 @@ export default class Chat extends Component {
         });
       }
 
-// setting messages in the async storage
+    /**
+    * saves messages to asyncStorage
+    * @async
+    * @function saveMessagetoStorage
+    * @return {Promise<AsyncStorage>} message in asyncStorage
+    */
+
+    // setting messages in the async storage
     async saveMessagetoStorage() {
         try {
             await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
@@ -184,7 +198,14 @@ export default class Chat extends Component {
         }
     }
 
-// Deleting stored messages
+    /**
+     * deletes messages from asyncStorage. Currently not used but written incase it is needed
+     * @async
+     * @function deleteMessages
+     * @param {none}
+     */
+
+    // Deleting stored messages. Not currently called. But can be if needed
     async deleteMessages() {
         try {
             await AsyncStorage.removeItem('messages');
@@ -193,7 +214,13 @@ export default class Chat extends Component {
         }
     }
 
-// clicking that send button to send that message. addes to state and to database.
+    /**
+     * @function onSend
+     * @param {*} messages - message can be: {message/image/location}
+     * @returns {state} updates state with message
+     */
+
+    // clicking that send button to send that message. adds to state and to database.
     onSend(messages = []) {
         this.setState(previousState => ({
             messages: GiftedChat.append(previousState.messages, messages),
@@ -205,7 +232,14 @@ export default class Chat extends Component {
         });
     }
 
-// Removes toolbar if internet is not detected.
+    /**
+     * removes toolbar if internet is not detected
+     * @function renderInputToolbar
+     * @param {*} props
+     * @returns {InputToolbar}
+     */
+
+    // Removes toolbar if internet is not detected.
     renderInputToolbar(props) {
         if (this.state.isConnected == false) {
         }  else {
@@ -217,12 +251,19 @@ export default class Chat extends Component {
         }
     }
 
-// custom small + to take picture/upload picture/locaiton
+    // custom small + to take picture/upload picture/locaiton
     renderCustomActions = (props) => {
         return <CustomActions {...props} />;
     };
 
-// show map location
+    /**
+     * if currentMessage has location coords then mapview is returned
+     * @function renderCustomView
+     * @param {*} props
+     * @returns {MapView}
+     */
+
+    // show map location
     renderCustomView(props) {
         const { currentMessage } = props;
 
